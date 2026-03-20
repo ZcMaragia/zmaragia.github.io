@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kenya Social Development Indicators Dashboard | Zachary Maragia</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #F7F5F0;
+  --white: #FFFFFF;
+  --ink: #1A1A1A;
+  --ink2: #3D3D3D;
+  --muted: #7A7A7A;
+  --light: #C8C4BC;
+  --teal: #00695C;
+  --teal2: #004D40;
+  --teal3: #E0F2EF;
+  --amber: #E65100;
+  --amber2: #FFF3E0;
+  --blue: #1565C0;
+  --blue2: #E3F0FF;
+  --red: #B71C1C;
+  --red2: #FFEBEE;
+  --green: #2E7D32;
+  --green2: #E8F5E9;
+  --border: #E0DDD8;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--teal2);
+  color: white;
+  padding: 0 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.site-header .logo { color: rgba(255,255,255,0.9); }
+.site-header .badge {
+  background: var(--teal);
+  padding: 0.25rem 0.8rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--teal2);
+  color: white;
+  padding: 3.5rem 2.5rem 3rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 320px; height: 320px;
+  border: 60px solid rgba(255,255,255,0.04);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  right: 80px; bottom: -80px;
+  width: 200px; height: 200px;
+  border: 40px solid rgba(255,255,255,0.03);
+  border-radius: 50%;
+}
+
+.hero-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.hero-tag::before {
+  content: '';
+  width: 28px;
+  height: 1px;
+  background: rgba(255,255,255,0.4);
+  display: inline-block;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  max-width: 700px;
+}
+
+.hero-sub {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.95rem;
+  max-width: 620px;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.meta-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+
+.meta-value {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+
+/* ── LAYOUT ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem 2.5rem;
+}
+
+/* ── KPI CARDS ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.kpi-card {
+  background: var(--white);
+  padding: 1.8rem 1.5rem;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.kpi-card:hover { background: #FAFAF8; }
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+
+.kpi-card.teal::before  { background: var(--teal); }
+.kpi-card.amber::before { background: var(--amber); }
+.kpi-card.blue::before  { background: var(--blue); }
+.kpi-card.red::before   { background: var(--red); }
+.kpi-card.green::before { background: var(--green); }
+
+.kpi-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+}
+
+.kpi-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+}
+
+.kpi-card.teal  .kpi-value { color: var(--teal2); }
+.kpi-card.amber .kpi-value { color: var(--amber); }
+.kpi-card.blue  .kpi-value { color: var(--blue); }
+.kpi-card.red   .kpi-value { color: var(--red); }
+.kpi-card.green .kpi-value { color: var(--green); }
+
+.kpi-trend {
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.trend-up   { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--muted); }
+
+.kpi-source {
+  font-size: 0.68rem;
+  color: var(--light);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+/* ── SECTION TITLE ── */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.section-title .section-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── CHARTS GRID ── */
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.charts-row-equal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  padding: 1.8rem;
+  animation: fadeUp 0.7s ease forwards;
+}
+
+.chart-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+}
+
+.chart-desc {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.chart-wrap {
+  position: relative;
+}
+
+/* ── FINDINGS PANEL ── */
+.findings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.finding-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  padding: 1.4rem 1.5rem;
+}
+
+.finding-card.positive { border-left-color: var(--green); }
+.finding-card.negative { border-left-color: var(--red); }
+.finding-card.neutral  { border-left-color: var(--teal); }
+.finding-card.caution  { border-left-color: var(--amber); }
+
+.finding-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.finding-icon { font-size: 1rem; }
+
+.finding-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.finding-card.positive .finding-title { color: var(--green); }
+.finding-card.negative .finding-title { color: var(--red); }
+.finding-card.neutral  .finding-title { color: var(--teal); }
+.finding-card.caution  .finding-title { color: var(--amber); }
+
+.finding-text {
+  font-size: 0.88rem;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+/* ── METHODOLOGY ── */
+.methodology {
+  background: var(--teal3);
+  border: 1px solid rgba(0,105,92,0.2);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+}
+
+.method-block h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal2);
+  margin-bottom: 0.6rem;
+  font-weight: 500;
+}
+
+.method-block p, .method-block ul {
+  font-size: 0.83rem;
+  color: var(--ink2);
+  line-height: 1.6;
+}
+
+.method-block ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.method-block ul li::before {
+  content: '→ ';
+  color: var(--teal);
+  font-weight: 600;
+}
+
+/* ── DATA TABLE ── */
+.table-wrap {
+  background: var(--white);
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+thead tr {
+  background: var(--teal2);
+  color: white;
+}
+
+thead th {
+  padding: 0.9rem 1.2rem;
+  text-align: left;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+tbody tr:nth-child(even) { background: #FAFAF8; }
+tbody tr:hover { background: var(--teal3); }
+
+tbody td {
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink2);
+}
+
+tbody td:first-child { font-weight: 500; color: var(--ink); }
+
+.pill {
+  display: inline-block;
+  padding: 0.2rem 0.7rem;
+  border-radius: 2px;
+  font-size: 0.72rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.pill-green { background: var(--green2); color: var(--green); }
+.pill-red   { background: var(--red2);   color: var(--red); }
+.pill-amber { background: var(--amber2); color: var(--amber); }
+.pill-blue  { background: var(--blue2);  color: var(--blue); }
+
+/* ── FOOTER ── */
+.dash-footer {
+  background: var(--ink);
+  color: rgba(255,255,255,0.6);
+  padding: 1.8rem 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dash-footer a { color: rgba(255,255,255,0.8); }
+
+.source-chips {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: rgba(255,255,255,0.1);
+  padding: 0.2rem 0.7rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px) {
+  .charts-row, .charts-row-equal { grid-template-columns: 1fr; }
+  .methodology { grid-template-columns: 1fr; }
+  .container { padding: 1.5rem; }
+  .hero { padding: 2rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="site-header">
+  <span class="logo">ZACHARY MARAGIA — PORTFOLIO</span>
+  <span class="badge">Project 1 of 5</span>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">M&E · Data Analysis · Social Development</div>
+  <h1>Kenya Social Development<br/>Indicators Dashboard</h1>
+  <p class="hero-sub">
+    A monitoring and evaluation dashboard tracking Kenya's progress across five core social development dimensions — poverty, education, health, water & sanitation, and gender equality — using World Bank and UN open data (2010–2022).
+  </p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <span class="meta-label">Data Source</span>
+      <span class="meta-value">World Bank Open Data / WHO / UNICEF</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Period</span>
+      <span class="meta-value">2010 – 2022</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Analyst</span>
+      <span class="meta-value">Zachary Maragia</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Tools Used</span>
+      <span class="meta-value">Excel · Power BI · HTML/JS</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- KPI CARDS -->
+  <div class="kpi-grid">
+    <div class="kpi-card teal">
+      <div class="kpi-label">Poverty Rate<br/>(below $2.15/day)</div>
+      <div class="kpi-value">36.1%</div>
+      <div class="kpi-trend trend-down">↓ Down from 43.6% in 2010</div>
+      <div class="kpi-source">World Bank, 2021</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Primary School<br/>Enrolment Rate</div>
+      <div class="kpi-value">87.4%</div>
+      <div class="kpi-trend trend-up">↑ Up from 79.2% in 2010</div>
+      <div class="kpi-source">World Bank / UNESCO, 2022</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Access to Basic<br/>Drinking Water</div>
+      <div class="kpi-value">63.0%</div>
+      <div class="kpi-trend trend-up">↑ Up from 47.3% in 2010</div>
+      <div class="kpi-source">WHO/UNICEF JMP, 2022</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Under-5 Mortality<br/>(per 1,000 live births)</div>
+      <div class="kpi-value">43.2</div>
+      <div class="kpi-trend trend-down">↓ Improved from 73.1 in 2010</div>
+      <div class="kpi-source">World Bank / UNICEF, 2022</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Female Secondary<br/>Enrolment Rate</div>
+      <div class="kpi-value">54.1%</div>
+      <div class="kpi-trend trend-up">↑ Up from 40.8% in 2010</div>
+      <div class="kpi-source">UNESCO, 2022</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Poverty &amp; Social Indicator Trends (2010–2022)</h3>
+      <p class="chart-desc">Multi-indicator trend analysis tracking Kenya's progress against key SDG-aligned social development benchmarks over a 12-year period.</p>
+      <div class="chart-wrap"><canvas id="trendChart" height="200"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>SDG Progress Score by Dimension</h3>
+      <p class="chart-desc">Composite score (0–100) measuring Kenya's advancement towards SDG targets across five social dimensions in 2022.</p>
+      <div class="chart-wrap"><canvas id="radarChart" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-row-equal">
+    <div class="chart-card">
+      <h3>Water &amp; Sanitation Access by Setting (2010–2022)</h3>
+      <p class="chart-desc">Urban vs. rural disparity in access to basic drinking water and sanitation services — a persistent equity gap in Kenya's development.</p>
+      <div class="chart-wrap"><canvas id="washChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Education Enrolment by Gender &amp; Level (2022)</h3>
+      <p class="chart-desc">Gross enrolment ratios by gender across primary, secondary, and tertiary education levels, highlighting gender parity progress and remaining gaps.</p>
+      <div class="chart-wrap"><canvas id="eduChart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- COUNTY DATA TABLE -->
+  <div class="section-title">
+    <h2>Regional Performance Snapshot</h2>
+    <span class="section-tag">Select Counties · 2022</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>County / Region</th>
+          <th>Poverty Rate (%)</th>
+          <th>Primary Enrolment (%)</th>
+          <th>Water Access (%)</th>
+          <th>Under-5 Mortality</th>
+          <th>Overall Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Nairobi</td>
+          <td>13.2%</td>
+          <td>94.1%</td>
+          <td>89.4%</td>
+          <td>22.1</td>
+          <td><span class="pill pill-green">On Track</span></td>
+        </tr>
+        <tr>
+          <td>Mombasa</td>
+          <td>21.8%</td>
+          <td>88.3%</td>
+          <td>74.2%</td>
+          <td>31.4</td>
+          <td><span class="pill pill-green">On Track</span></td>
+        </tr>
+        <tr>
+          <td>Kisumu</td>
+          <td>38.4%</td>
+          <td>82.6%</td>
+          <td>61.3%</td>
+          <td>47.8</td>
+          <td><span class="pill pill-amber">At Risk</span></td>
+        </tr>
+        <tr>
+          <td>Nakuru</td>
+          <td>31.7%</td>
+          <td>86.9%</td>
+          <td>58.7%</td>
+          <td>39.6</td>
+          <td><span class="pill pill-amber">At Risk</span></td>
+        </tr>
+        <tr>
+          <td>Turkana</td>
+          <td>79.4%</td>
+          <td>51.2%</td>
+          <td>22.1%</td>
+          <td>88.3</td>
+          <td><span class="pill pill-red">Off Track</span></td>
+        </tr>
+        <tr>
+          <td>Mandera</td>
+          <td>82.1%</td>
+          <td>44.8%</td>
+          <td>18.6%</td>
+          <td>92.7</td>
+          <td><span class="pill pill-red">Off Track</span></td>
+        </tr>
+        <tr>
+          <td>Meru</td>
+          <td>29.6%</td>
+          <td>90.3%</td>
+          <td>64.1%</td>
+          <td>36.2</td>
+          <td><span class="pill pill-blue">Progressing</span></td>
+        </tr>
+        <tr>
+          <td>Kisii</td>
+          <td>33.1%</td>
+          <td>89.7%</td>
+          <td>55.4%</td>
+          <td>41.3</td>
+          <td><span class="pill pill-blue">Progressing</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div class="section-title">
+    <h2>Key Findings &amp; Recommendations</h2>
+    <span class="section-tag">Analysis Summary</span>
+  </div>
+
+  <div class="findings-grid">
+    <div class="finding-card positive">
+      <div class="finding-header">
+        <span class="finding-icon">✅</span>
+        <span class="finding-title">Positive — Education Progress</span>
+      </div>
+      <p class="finding-text">Primary school enrolment increased by 8.2 percentage points between 2010–2022, with gender parity at primary level nearly achieved (parity index: 0.97). This reflects the impact of Kenya's Free Day Secondary Education policy.</p>
+    </div>
+    <div class="finding-card positive">
+      <div class="finding-header">
+        <span class="finding-icon">✅</span>
+        <span class="finding-title">Positive — Child Health</span>
+      </div>
+      <p class="finding-text">Under-5 mortality declined sharply from 73.1 to 43.2 per 1,000 live births — a 41% reduction — driven by expanded immunisation coverage, skilled birth attendance, and community health worker programmes.</p>
+    </div>
+    <div class="finding-card negative">
+      <div class="finding-header">
+        <span class="finding-icon">⚠️</span>
+        <span class="finding-title">Critical Gap — Arid &amp; Semi-Arid Regions</span>
+      </div>
+      <p class="finding-text">Counties such as Turkana and Mandera exhibit poverty rates exceeding 79%, with water access below 25%. These regions are severely off track for SDG 1, 3, and 6, requiring targeted, conflict-sensitive programming and resource reallocation.</p>
+    </div>
+    <div class="finding-card caution">
+      <div class="finding-header">
+        <span class="finding-icon">🔶</span>
+        <span class="finding-title">Caution — Urban-Rural WASH Gap</span>
+      </div>
+      <p class="finding-text">Urban water access (87%) far outpaces rural access (47%), despite overall national improvement. Sanitation disparities are even wider. Programmes should prioritise last-mile rural WASH infrastructure to close the equity gap.</p>
+    </div>
+    <div class="finding-card neutral">
+      <div class="finding-header">
+        <span class="finding-icon">💡</span>
+        <span class="finding-title">Recommendation — Adaptive M&amp;E</span>
+      </div>
+      <p class="finding-text">County-level disaggregation reveals that national averages mask extreme subnational disparities. Programmes should adopt adaptive management cycles with quarterly county-level data reviews to trigger timely course corrections.</p>
+    </div>
+    <div class="finding-card neutral">
+      <div class="finding-header">
+        <span class="finding-icon">💡</span>
+        <span class="finding-title">Recommendation — Gender Targeting</span>
+      </div>
+      <p class="finding-text">While primary gender parity is near-achieved, secondary female enrolment (54.1%) and tertiary participation remain low. Conditional cash transfer programmes and community awareness campaigns targeting girls' retention should be prioritised.</p>
+    </div>
+  </div>
+
+  <!-- METHODOLOGY -->
+  <div class="methodology">
+    <div class="method-block">
+      <h4>Data Sources</h4>
+      <ul>
+        <li>World Bank Open Data (data.worldbank.org)</li>
+        <li>WHO/UNICEF Joint Monitoring Programme (JMP)</li>
+        <li>UNESCO Institute for Statistics (UIS)</li>
+        <li>Kenya National Bureau of Statistics (KNBS)</li>
+        <li>UNDP Human Development Reports</li>
+      </ul>
+    </div>
+    <div class="method-block">
+      <h4>Analytical Methods</h4>
+      <ul>
+        <li>Longitudinal trend analysis (2010–2022)</li>
+        <li>County-level disaggregation</li>
+        <li>SDG progress scoring framework</li>
+        <li>Urban-rural equity gap analysis</li>
+        <li>Gender parity index calculation</li>
+      </ul>
+    </div>
+    <div class="method-block">
+      <h4>Tools &amp; Limitations</h4>
+      <p>Analysis conducted in Excel and Power BI. Dashboard visualised in HTML/JS for portfolio presentation. Note: some county-level figures are modelled estimates where census microdata is unavailable. Data reflects latest available year per indicator.</p>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- FOOTER -->
+<div class="dash-footer">
+  <span>© 2024 Zachary Maragia · Portfolio Project 1 of 5</span>
+  <div class="source-chips">
+    <span class="chip">World Bank Open Data</span>
+    <span class="chip">WHO/UNICEF JMP</span>
+    <span class="chip">UNESCO UIS</span>
+    <span class="chip">KNBS</span>
+  </div>
+</div>
+
+<script>
+// ── CHART 1: TREND LINE CHART ──
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const years = [2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022];
+
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [
+      {
+        label: 'Poverty Rate (%)',
+        data: [43.6,42.8,41.9,41.0,40.1,39.3,38.8,38.1,37.6,37.0,36.8,36.1,35.5],
+        borderColor: '#00695C', backgroundColor: 'rgba(0,105,92,0.08)',
+        tension: 0.4, pointRadius: 3, borderWidth: 2.5, fill: false
+      },
+      {
+        label: 'Primary Enrolment (%)',
+        data: [79.2,80.1,81.3,82.0,83.1,83.8,84.2,84.9,85.3,85.8,86.0,86.8,87.4],
+        borderColor: '#E65100', backgroundColor: 'rgba(230,81,0,0.08)',
+        tension: 0.4, pointRadius: 3, borderWidth: 2.5, fill: false
+      },
+      {
+        label: 'Water Access (%)',
+        data: [47.3,48.8,50.1,51.4,53.0,54.2,55.6,57.0,58.4,59.8,60.9,62.1,63.0],
+        borderColor: '#1565C0', backgroundColor: 'rgba(21,101,192,0.08)',
+        tension: 0.4, pointRadius: 3, borderWidth: 2.5, fill: false
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { font: { family: "'IBM Plex Mono'", size: 10 }, boxWidth: 12, padding: 16 }
+      },
+      tooltip: {
+        backgroundColor: '#1A1A1A',
+        titleFont: { family: "'IBM Plex Mono'", size: 11 },
+        bodyFont: { family: "'IBM Plex Sans'", size: 11 },
+        padding: 12,
+      }
+    },
+    scales: {
+      x: { grid: { color: '#F0EDE8' }, ticks: { font: { family: "'IBM Plex Mono'", size: 10 } } },
+      y: { grid: { color: '#F0EDE8' }, ticks: { font: { family: "'IBM Plex Mono'", size: 10 }, callback: v => v + '%' }, min: 30, max: 95 }
+    }
+  }
+});
+
+// ── CHART 2: RADAR ──
+const radarCtx = document.getElementById('radarChart').getContext('2d');
+new Chart(radarCtx, {
+  type: 'radar',
+  data: {
+    labels: ['Poverty\nReduction','Education\nAccess','WASH\nCoverage','Child\nHealth','Gender\nEquality'],
+    datasets: [
+      {
+        label: '2010 Baseline',
+        data: [42, 55, 38, 41, 44],
+        borderColor: 'rgba(0,105,92,0.4)', backgroundColor: 'rgba(0,105,92,0.07)',
+        borderWidth: 1.5, pointRadius: 3
+      },
+      {
+        label: '2022 Progress',
+        data: [62, 74, 58, 68, 61],
+        borderColor: '#004D40', backgroundColor: 'rgba(0,77,64,0.12)',
+        borderWidth: 2.5, pointRadius: 4
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { font: { family: "'IBM Plex Mono'", size: 10 }, boxWidth: 12, padding: 12 }
+      }
+    },
+    scales: {
+      r: {
+        min: 0, max: 100,
+        ticks: { stepSize: 20, font: { family: "'IBM Plex Mono'", size: 9 }, backdropColor: 'transparent' },
+        grid: { color: '#E8E5E0' },
+        pointLabels: { font: { family: "'IBM Plex Sans'", size: 10 } }
+      }
+    }
+  }
+});
+
+// ── CHART 3: WASH BAR ──
+const washCtx = document.getElementById('washChart').getContext('2d');
+new Chart(washCtx, {
+  type: 'bar',
+  data: {
+    labels: ['2010','2013','2016','2019','2022'],
+    datasets: [
+      { label: 'Urban – Water',     data: [67.4,72.1,77.3,82.8,87.1], backgroundColor: '#1565C0', borderRadius: 2 },
+      { label: 'Rural – Water',     data: [35.2,38.7,41.6,44.2,47.4], backgroundColor: '#90CAF9', borderRadius: 2 },
+      { label: 'Urban – Sanitation',data: [52.1,56.3,60.8,66.4,71.2], backgroundColor: '#00695C', borderRadius: 2 },
+      { label: 'Rural – Sanitation',data: [22.3,25.1,27.8,30.6,33.4], backgroundColor: '#A5D6A7', borderRadius: 2 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: "'IBM Plex Mono'", size: 9 }, boxWidth: 10, padding: 10 } },
+      tooltip: { backgroundColor: '#1A1A1A', titleFont: { family: "'IBM Plex Mono'", size: 11 }, bodyFont: { family: "'IBM Plex Sans'", size: 11 }, padding: 10 }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: "'IBM Plex Mono'", size: 10 } } },
+      y: { grid: { color: '#F0EDE8' }, ticks: { font: { family: "'IBM Plex Mono'", size: 10 }, callback: v => v + '%' }, max: 100 }
+    }
+  }
+});
+
+// ── CHART 4: EDUCATION GENDER ──
+const eduCtx = document.getElementById('eduChart').getContext('2d');
+new Chart(eduCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Primary','Secondary','Tertiary'],
+    datasets: [
+      { label: 'Male',   data: [88.6, 62.4, 11.8], backgroundColor: '#1565C0', borderRadius: 3 },
+      { label: 'Female', data: [86.2, 54.1,  8.4], backgroundColor: '#E65100', borderRadius: 3 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom', labels: { font: { family: "'IBM Plex Mono'", size: 10 }, boxWidth: 10, padding: 12 } },
+      tooltip: { backgroundColor: '#1A1A1A', bodyFont: { family: "'IBM Plex Sans'", size: 11 }, padding: 10 }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { font: { family: "'IBM Plex Mono'", size: 11 } } },
+      y: {
+        grid: { color: '#F0EDE8' },
+        ticks: { font: { family: "'IBM Plex Mono'", size: 10 }, callback: v => v + '%' },
+        max: 100
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
