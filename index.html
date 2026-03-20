@@ -427,6 +427,26 @@
     gap: 0.5rem;
   }
 
+  .project-link {
+    display: inline-block;
+    margin-top: 1.2rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: border-color 0.3s, color 0.3s, background 0.3s;
+  }
+
+  .project-link:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+  }
+
   /* ── SKILLS ── */
   .skills-layout {
     display: grid;
@@ -825,6 +845,7 @@
           <strong>Methodology</strong>
           Quantitative data analysis, trend analysis, variance reporting, and stakeholder-ready visualisations.
         </div>
+        <a href="project1-kenya-social-dev-dashboard.html" class="project-link" target="_blank">→ View Live Dashboard</a>
       </div>
       <div class="project-number">01</div>
     </div>
@@ -865,6 +886,7 @@
         <span class="tag">Excel</span>
         <span class="tag">Data Modelling</span>
       </div>
+      <a href="project1-kenya-water-analysis.html" class="project-link" target="_blank">→ View Project</a>
     </div>
 
     <!-- Project 4 -->
@@ -1011,7 +1033,7 @@
   <h2>Open for <em>Remote Opportunities</em></h2>
   <p>Available for freelance consulting, contract roles, and full-time remote positions.<br/>Specialising in data analytics, M&amp;E, project management, and policy research.</p>
   <div class="contact-links">
-    <a href="mailto:maragia.zc@gmail.com" class="btn-primary">✉ Email Me</a>
+    <a href="/cdn-cgi/l/email-protection#fb969a899a9c929ad58198bb9c969a9297d5989496" class="btn-primary">✉ Email Me</a>
     <a href="https://www.linkedin.com/in/zachary-maragia-b7962362/" target="_blank" class="btn-outline">LinkedIn Profile</a>
     <a href="#" class="btn-outline">Download CV</a>
   </div>
@@ -1023,7 +1045,7 @@
   <p>Data Analyst · M&amp;E Professional · Project Management Professional</p>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // Intersection Observer for scroll animations
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(el => {
@@ -1054,9 +1076,4 @@
   // Smooth nav highlight
   const sections = document.querySelectorAll('section[id], div[id]');
   const navLinks = document.querySelectorAll('.nav-links a');
-  window.addEventListener('scroll', () => {
-    let current = '';
-    sections.forEach(s => {
-      if (window.scrollY >= s.offsetTop - 200) current = s.id;
-    });
-    navL
+  window.addEventListe
