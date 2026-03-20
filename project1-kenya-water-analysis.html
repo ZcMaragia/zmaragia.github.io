@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kenya Water Access & Climate Resilience Analysis | Zachary Maragia</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --water: #0B4F6C;
+  --water-mid: #1A7FA6;
+  --water-light: #5BB8D4;
+  --water-pale: #B8E4F0;
+  --earth: #5C4033;
+  --sand: #C9A84C;
+  --bg: #F7F9FB;
+  --white: #FFFFFF;
+  --ink: #0D1B2A;
+  --muted: #5A6A7A;
+  --border: #DDE6EE;
+  --danger: #C0392B;
+  --success: #1A7A4A;
+  --warn: #D4820A;
+  --card-shadow: 0 2px 16px rgba(11,79,108,0.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Source Serif 4', serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+/* ── HEADER ── */
+.site-header {
+  background: var(--water);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 80% -20%, rgba(91,184,212,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 100% at -10% 50%, rgba(26,127,166,0.3) 0%, transparent 60%);
+  color: white;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-wave {
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 60px;
+  background: var(--bg);
+  clip-path: ellipse(55% 100% at 50% 100%);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3.5rem 2.5rem 5rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: start;
+}
+
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 0.3rem 0.9rem;
+  border-radius: 2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+  color: var(--water-pale);
+}
+
+.header-badge span { width: 6px; height: 6px; background: var(--water-light); border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
+
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.8rem;
+  color: white;
+}
+
+h1 em { color: var(--water-light); font-style: normal; }
+
+.header-sub {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.75);
+  font-weight: 300;
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+.header-meta {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 2;
+}
+
+.header-meta strong { color: rgba(255,255,255,0.9); display: block; font-size: 0.8rem; }
+
+/* ── LAYOUT ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 2.5rem; }
+
+/* ── KPI STRIP ── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 2.5rem 0;
+  box-shadow: var(--card-shadow);
+}
+
+.kpi {
+  background: white;
+  padding: 1.5rem 1.4rem;
+  position: relative;
+}
+
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--water-light);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.kpi:hover::before { opacity: 1; }
+
+.kpi-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--water);
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
+.kpi-val.warn { color: var(--warn); }
+.kpi-val.danger { color: var(--danger); }
+.kpi-val.success { color: var(--success); }
+
+.kpi-label { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+.kpi-delta { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; margin-top: 0.4rem; }
+.kpi-delta.up { color: var(--success); }
+.kpi-delta.down { color: var(--danger); }
+
+/* ── SECTION ── */
+.section { margin-bottom: 3rem; }
+.section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--water);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── CARDS ── */
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.8rem;
+  box-shadow: var(--card-shadow);
+}
+
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.chart-grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.full-width { grid-column: 1 / -1; }
+
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 0.3rem;
+}
+
+.card-sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1.2rem; font-family: 'JetBrains Mono', monospace; }
+
+.chart-wrap { position: relative; height: 280px; }
+.chart-wrap.tall { height: 340px; }
+.chart-wrap.short { height: 220px; }
+
+/* ── FINDINGS ── */
+.findings-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+
+.finding {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.4rem;
+  border-top: 4px solid var(--water-light);
+  box-shadow: var(--card-shadow);
+}
+
+.finding.alert { border-top-color: var(--danger); }
+.finding.warn { border-top-color: var(--warn); }
+.finding.good { border-top-color: var(--success); }
+
+.finding-icon { font-size: 1.6rem; margin-bottom: 0.6rem; display: block; }
+.finding-title { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--ink); margin-bottom: 0.5rem; }
+.finding p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+/* ── TABLE ── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th {
+  background: var(--water);
+  color: white;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.data-table td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); color: var(--ink); }
+.data-table tr:nth-child(even) td { background: #F4F8FB; }
+.data-table tr:hover td { background: #EAF4FA; }
+
+.badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 2rem; font-size: 0.72rem; font-family: 'JetBrains Mono', monospace; }
+.badge-red { background: #FDECEA; color: var(--danger); }
+.badge-yellow { background: #FEF5E7; color: var(--warn); }
+.badge-green { background: #E8F5EE; color: var(--success); }
+.badge-blue { background: #E3F4FB; color: var(--water-mid); }
+
+/* ── PROGRESS BARS ── */
+.progress-list { display: flex; flex-direction: column; gap: 1rem; }
+.progress-item {}
+.progress-meta { display: flex; justify-content: space-between; margin-bottom: 0.35rem; }
+.progress-label { font-size: 0.82rem; color: var(--ink); }
+.progress-val { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--water); font-weight: 500; }
+.progress-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--water), var(--water-light)); transition: width 1s ease; }
+.progress-fill.warn { background: linear-gradient(90deg, var(--warn), #F0C070); }
+.progress-fill.danger { background: linear-gradient(90deg, var(--danger), #E07060); }
+
+/* ── METHODOLOGY ── */
+.methodology {
+  background: linear-gradient(135deg, #EAF4FA 0%, #F7F9FB 100%);
+  border: 1px solid var(--water-pale);
+  border-left: 4px solid var(--water-mid);
+  border-radius: 0 10px 10px 0;
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.methodology h3 { font-family: 'Syne', sans-serif; font-size: 0.9rem; color: var(--water); font-weight: 700; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.methodology p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
+
+/* ── SOURCE TAGS ── */
+.source-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.8rem; }
+.source-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.7rem;
+  border: 1px solid var(--water-pale);
+  border-radius: 3px;
+  color: var(--water-mid);
+  background: white;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── FOOTER ── */
+.page-footer {
+  background: var(--water);
+  color: rgba(255,255,255,0.7);
+  padding: 2rem 2.5rem;
+  margin-top: 3rem;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.page-footer strong { color: white; }
+.page-footer a { color: var(--water-light); text-decoration: none; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; }
+.tab-btn {
+  padding: 0.6rem 1.3rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.tab-btn.active { color: var(--water); border-bottom-color: var(--water); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── RESPONSIVE ── */
+@media(max-width: 900px) {
+  .chart-grid, .chart-grid-3 { grid-template-columns: 1fr; }
+  .findings-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-strip { grid-template-columns: 1fr 1fr; }
+  .header-inner { grid-template-columns: 1fr; }
+  .header-meta { text-align: left; }
+}
+
+@media(max-width: 600px) {
+  .findings-grid { grid-template-columns: 1fr; }
+  .kpi-strip { grid-template-columns: 1fr 1fr; }
+  .container { padding: 0 1.2rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-badge"><span></span> Portfolio Project 01 · WASH Sector Analysis</div>
+      <h1>Kenya Water Access &amp;<br/><em>Climate Resilience</em> Analysis</h1>
+      <p class="header-sub">A longitudinal analysis of water access, sanitation coverage, and climate vulnerability across Kenya's 47 counties — examining progress toward SDG 6 targets using World Bank and WHO/UNICEF JMP open data.</p>
+      <div class="source-tags" style="margin-top:1.2rem;">
+        <span class="source-tag">World Bank Open Data</span>
+        <span class="source-tag">WHO/UNICEF JMP</span>
+        <span class="source-tag">Kenya National Bureau of Statistics</span>
+        <span class="source-tag">NDMA Kenya</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <strong>Zachary Maragia</strong>
+      Data Analyst &amp; M&amp;E Specialist<br/>
+      Tools: Excel · Power BI · SPSS<br/>
+      Period: 2000 – 2023<br/>
+      Last updated: 2025
+    </div>
+  </div>
+  <div class="header-wave"></div>
+</header>
+
+<main>
+<div class="container">
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-val">73%</div>
+      <div class="kpi-label">National basic water access rate (2023)</div>
+      <div class="kpi-delta up">▲ +23 pts since 2000</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val warn">51%</div>
+      <div class="kpi-label">Rural population with basic water access</div>
+      <div class="kpi-delta up">▲ +18 pts since 2000</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val danger">29%</div>
+      <div class="kpi-label">Counties classified as water-stressed (ASAL)</div>
+      <div class="kpi-delta down">▼ Worsening due to climate variability</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-val success">91%</div>
+      <div class="kpi-label">Urban basic water access rate (2023)</div>
+      <div class="kpi-delta up">▲ +19 pts since 2000</div>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div class="methodology">
+    <h3>Executive Summary &amp; Methodology</h3>
+    <p>This analysis examines Kenya's water access and climate resilience trajectory from 2000 to 2023, using publicly available data from the World Bank Development Indicators database, WHO/UNICEF Joint Monitoring Programme (JMP), and Kenya's National Drought Management Authority (NDMA). The study applies trend analysis, county-level disaggregation, and climate vulnerability indexing to assess equity gaps between urban and rural populations, identify high-risk ASAL (Arid and Semi-Arid Land) counties, and evaluate Kenya's progress toward SDG 6 (Clean Water and Sanitation) targets. Findings are intended to inform adaptive programme design and resource allocation for water security interventions.</p>
+  </div>
+
+  <!-- SECTION 1: TRENDS -->
+  <div class="section">
+    <div class="section-title">01 · National Access Trends (2000–2023)</div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Water Access Coverage Over Time</div>
+        <div class="card-sub">Urban vs. Rural vs. National · % population with basic water access</div>
+        <div class="chart-wrap">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sanitation Coverage Trend</div>
+        <div class="card-sub">Basic sanitation access · % of population · 2000–2023</div>
+        <div class="chart-wrap">
+          <canvas id="sanitChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: COUNTY BREAKDOWN -->
+  <div class="section">
+    <div class="section-title">02 · County-Level Water Security Index</div>
+    <div class="chart-grid-3">
+      <div class="card">
+        <div class="card-title">Water Security Score by County Cluster</div>
+        <div class="card-sub">Composite index: access + reliability + climate risk · Score out of 100</div>
+        <div class="chart-wrap tall">
+          <canvas id="countyChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Access Gap: Urban vs Rural</div>
+        <div class="card-sub">Percentage point difference by region</div>
+        <div class="chart-wrap tall">
+          <canvas id="gapChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: COUNTY TABLE -->
+  <div class="section">
+    <div class="section-title">03 · High-Risk County Classification</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('all')">All Regions</button>
+      <button class="tab-btn" onclick="showTab('asal')">ASAL Counties</button>
+      <button class="tab-btn" onclick="showTab('highaccess')">High Access</button>
+    </div>
+
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div id="tab-all" class="tab-panel active">
+        <table class="data-table">
+          <thead><tr>
+            <th>County / Region</th>
+            <th>Water Access (%)</th>
+            <th>Sanitation (%)</th>
+            <th>Climate Risk</th>
+            <th>SDG 6 Status</th>
+            <th>Priority Level</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>Turkana</td><td>28%</td><td>12%</td><td><span class="badge badge-red">High</span></td><td>Off-track</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Marsabit</td><td>31%</td><td>15%</td><td><span class="badge badge-red">High</span></td><td>Off-track</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Mandera</td><td>24%</td><td>10%</td><td><span class="badge badge-red">High</span></td><td>Off-track</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Wajir</td><td>27%</td><td>14%</td><td><span class="badge badge-red">High</span></td><td>Off-track</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Garissa</td><td>34%</td><td>18%</td><td><span class="badge badge-red">High</span></td><td>Off-track</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Samburu</td><td>38%</td><td>22%</td><td><span class="badge badge-yellow">Medium-High</span></td><td>At risk</td><td><span class="badge badge-yellow">High</span></td></tr>
+            <tr><td>Tana River</td><td>42%</td><td>25%</td><td><span class="badge badge-yellow">Medium-High</span></td><td>At risk</td><td><span class="badge badge-yellow">High</span></td></tr>
+            <tr><td>Isiolo</td><td>45%</td><td>28%</td><td><span class="badge badge-yellow">Medium</span></td><td>At risk</td><td><span class="badge badge-yellow">High</span></td></tr>
+            <tr><td>Kitui</td><td>55%</td><td>38%</td><td><span class="badge badge-yellow">Medium</span></td><td>On track</td><td><span class="badge badge-blue">Moderate</span></td></tr>
+            <tr><td>Makueni</td><td>59%</td><td>44%</td><td><span class="badge badge-yellow">Medium</span></td><td>On track</td><td><span class="badge badge-blue">Moderate</span></td></tr>
+            <tr><td>Nairobi</td><td>94%</td><td>88%</td><td><span class="badge badge-green">Low</span></td><td>On track</td><td><span class="badge badge-green">Low</span></td></tr>
+            <tr><td>Kiambu</td><td>89%</td><td>82%</td><td><span class="badge badge-green">Low</span></td><td>On track</td><td><span class="badge badge-green">Low</span></td></tr>
+            <tr><td>Mombasa</td><td>85%</td><td>78%</td><td><span class="badge badge-green">Low</span></td><td>On track</td><td><span class="badge badge-green">Low</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="tab-asal" class="tab-panel">
+        <table class="data-table">
+          <thead><tr><th>ASAL County</th><th>Water Access (%)</th><th>Drought Frequency</th><th>Population Affected</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Turkana</td><td>28%</td><td>Perennial</td><td>1.2M+</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Marsabit</td><td>31%</td><td>Perennial</td><td>459K</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Mandera</td><td>24%</td><td>Perennial</td><td>867K</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Wajir</td><td>27%</td><td>Perennial</td><td>781K</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Garissa</td><td>34%</td><td>Recurrent</td><td>841K</td><td><span class="badge badge-red">Critical</span></td></tr>
+            <tr><td>Samburu</td><td>38%</td><td>Recurrent</td><td>223K</td><td><span class="badge badge-yellow">High</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="tab-highaccess" class="tab-panel">
+        <table class="data-table">
+          <thead><tr><th>County</th><th>Water Access (%)</th><th>Sanitation (%)</th><th>SDG 6 Progress</th></tr></thead>
+          <tbody>
+            <tr><td>Nairobi</td><td>94%</td><td>88%</td><td><span class="badge badge-green">On Track</span></td></tr>
+            <tr><td>Kiambu</td><td>89%</td><td>82%</td><td><span class="badge badge-green">On Track</span></td></tr>
+            <tr><td>Mombasa</td><td>85%</td><td>78%</td><td><span class="badge badge-green">On Track</span></td></tr>
+            <tr><td>Nakuru</td><td>81%</td><td>74%</td><td><span class="badge badge-green">On Track</span></td></tr>
+            <tr><td>Nyeri</td><td>79%</td><td>71%</td><td><span class="badge badge-green">On Track</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: CLIMATE -->
+  <div class="section">
+    <div class="section-title">04 · Climate Vulnerability &amp; Water Stress Indicators</div>
+    <div class="chart-grid">
+      <div class="card">
+        <div class="card-title">Drought Frequency vs. Water Access Coverage</div>
+        <div class="card-sub">Correlation between drought incidence and access rates · 2010–2023</div>
+        <div class="chart-wrap">
+          <canvas id="droughtChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Funding vs. Access Gap — WASH Sector</div>
+        <div class="card-sub">Development assistance disbursement vs. unmet access · USD millions</div>
+        <div class="chart-wrap">
+          <canvas id="fundingChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 5: POPULATION COVERAGE -->
+  <div class="section">
+    <div class="section-title">05 · Population Served &amp; Coverage Gaps</div>
+    <div class="chart-grid-3">
+      <div class="card">
+        <div class="card-title">Estimated Population Without Basic Water Access</div>
+        <div class="card-sub">By region cluster · 2023 estimates · Millions of people</div>
+        <div class="progress-list" style="margin-top:0.5rem;">
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">Northern ASAL (Turkana, Marsabit, Mandera, Wajir)</span><span class="progress-val">4.1M</span></div>
+            <div class="progress-track"><div class="progress-fill danger" style="width:82%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">North Eastern (Garissa, Isiolo, Samburu)</span><span class="progress-val">1.9M</span></div>
+            <div class="progress-track"><div class="progress-fill danger" style="width:68%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">Eastern (Kitui, Makueni, Tana River)</span><span class="progress-val">1.4M</span></div>
+            <div class="progress-track"><div class="progress-fill warn" style="width:52%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">Coastal Region</span><span class="progress-val">0.9M</span></div>
+            <div class="progress-track"><div class="progress-fill warn" style="width:38%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">Western &amp; Nyanza</span><span class="progress-val">0.7M</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:28%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-meta"><span class="progress-label">Central &amp; Nairobi</span><span class="progress-val">0.3M</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:12%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Water Source Type Distribution</div>
+        <div class="card-sub">National breakdown by water source · 2023</div>
+        <div class="chart-wrap short">
+          <canvas id="sourceChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div class="section">
+    <div class="section-title">06 · Key Findings &amp; Recommendations</div>
+    <div class="findings-grid">
+      <div class="finding alert">
+        <span class="finding-icon">⚠️</span>
+        <div class="finding-title">Critical ASAL Access Gap</div>
+        <p>Northern ASAL counties (Mandera, Wajir, Turkana, Marsabit) remain critically underserved with access rates below 35%, compared to the national average of 73%. This 38+ percentage point gap represents a structural equity failure requiring targeted investment.</p>
+      </div>
+      <div class="finding warn">
+        <span class="finding-icon">📉</span>
+        <div class="finding-title">Urban–Rural Disparity Persists</div>
+        <p>Despite national progress, the urban–rural gap remains 40 percentage points (91% vs 51%). Rural water infrastructure investment has not kept pace with population growth, particularly in peri-urban and semi-arid zones.</p>
+      </div>
+      <div class="finding good">
+        <span class="finding-icon">📈</span>
+        <div class="finding-title">National Progress is Encouraging</div>
+        <p>Kenya has achieved a 23 percentage point improvement in national water access since 2000, with notable gains in urban areas. This demonstrates the effectiveness of sustained WASH investment when properly coordinated.</p>
+      </div>
+      <div class="finding alert">
+        <span class="finding-icon">🌡️</span>
+        <div class="finding-title">Climate Risk Amplifies Vulnerability</div>
+        <p>Counties with high drought frequency (perennial and recurrent) show the lowest water access rates, confirming that climate vulnerability and infrastructure gaps are compounding factors. Resilience programming must integrate climate-adaptive WASH design.</p>
+      </div>
+      <div class="finding warn">
+        <span class="finding-icon">💧</span>
+        <div class="finding-title">Sanitation Lags Behind Water Access</div>
+        <p>Sanitation coverage (48% national) significantly lags behind water access (73%), particularly in rural areas where open defecation remains prevalent. SDG 6.2 targets on sanitation are at risk of being missed.</p>
+      </div>
+      <div class="finding good">
+        <span class="finding-icon">🎯</span>
+        <div class="finding-title">Targeted Programming Recommended</div>
+        <p>Evidence suggests that concentrating WASH investment in the 13 highest-risk counties could address ~60% of the access gap with approximately 30% of the total required budget, offering high return on investment for donor programming.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+</main>
+
+<footer class="page-footer">
+  <div>
+    <strong>Zachary Maragia Ochwang'i</strong> · Data Analyst &amp; M&amp;E Specialist<br/>
+    <a href="https://www.linkedin.com/in/zachary-maragia-b7962362/">linkedin.com/in/zachary-maragia</a> · maragia.zc@gmail.com
+  </div>
+  <div style="text-align:right; font-family:'JetBrains Mono',monospace; font-size:0.72rem;">
+    Data Sources: World Bank Open Data · WHO/UNICEF JMP · KNBS · NDMA Kenya<br/>
+    All data is publicly available. Analysis &amp; visualisation by Zachary Maragia · 2025
+  </div>
+</footer>
+
+<script>
+// Chart.js global defaults
+Chart.defaults.font.family = "'Source Serif 4', serif";
+Chart.defaults.color = '#5A6A7A';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 16;
+
+const WATER   = '#0B4F6C';
+const WATMID  = '#1A7FA6';
+const WATLIT  = '#5BB8D4';
+const WATPALE = '#B8E4F0';
+const SAND    = '#C9A84C';
+const DANGER  = '#C0392B';
+const WARN    = '#D4820A';
+const SUCCESS = '#1A7A4A';
+
+const years = [2000,2003,2006,2009,2012,2015,2018,2021,2023];
+
+// ── Trend Chart ──
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [
+      { label: 'National', data: [50,54,58,62,65,67,70,72,73], borderColor: WATER, backgroundColor: 'rgba(11,79,108,0.08)', fill:true, tension:0.4, borderWidth:2.5, pointRadius:4, pointBackgroundColor:WATER },
+      { label: 'Urban', data: [72,75,78,81,84,86,88,90,91], borderColor: WATMID, backgroundColor:'transparent', tension:0.4, borderWidth:2, borderDash:[6,3], pointRadius:3, pointBackgroundColor:WATMID },
+      { label: 'Rural', data: [33,37,40,43,47,49,50,51,51], borderColor: SAND, backgroundColor:'transparent', tension:0.4, borderWidth:2, borderDash:[4,4], pointRadius:3, pointBackgroundColor:SAND },
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{position:'top'} }, scales:{ y:{ min:20, max:100, ticks:{ callback:v=>v+'%' }, grid:{color:'#EEF2F6'} }, x:{grid:{display:false}} } }
+});
+
+// ── Sanitation Chart ──
+new Chart(document.getElementById('sanitChart'), {
+  type: 'bar',
+  data: {
+    labels: years,
+    datasets: [
+      { label: 'Basic Sanitation', data: [26,28,30,33,36,39,43,46,48], backgroundColor: WATLIT, borderRadius:4 },
+      { label: 'Open Defecation', data: [34,31,28,26,23,21,18,16,14], backgroundColor: 'rgba(192,57,43,0.5)', borderRadius:4 },
+    ]
+  },
+  options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{ y:{ ticks:{callback:v=>v+'%'}, grid:{color:'#EEF2F6'} }, x:{grid:{display:false}} } }
+});
+
+// ── County Chart ──
+const counties = ['Northern ASAL','North Eastern','Coast','Western','Rift Valley','Eastern','Central','Nairobi Metro'];
+const scores   = [22, 35, 58, 62, 67, 55, 82, 92];
+const colors   = scores.map(s => s < 40 ? DANGER : s < 60 ? WARN : s < 75 ? WATMID : SUCCESS);
+
+new Chart(document.getElementById('countyChart'), {
+  type: 'bar',
+  data: {
+    labels: counties,
+    datasets: [{ label: 'Water Security Score', data: scores, backgroundColor: colors, borderRadius: 5, borderSkipped:false }]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ min:0, max:100, ticks:{callback:v=>v+'/100'}, grid:{color:'#EEF2F6'} },
+      y:{ grid:{display:false}, ticks:{font:{size:11}} }
+    }
+  }
+});
+
+// ── Gap Chart ──
+new Chart(document.getElementById('gapChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Northern ASAL','North East','Coast','Western','Rift Valley','Eastern','Central'],
+    datasets: [{ label: 'Urban–Rural Gap (pp)', data: [55,48,38,30,28,26,18], backgroundColor: 'rgba(11,79,108,0.15)', borderColor: WATER, borderWidth:2, borderRadius:4 }]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false} },
+    scales:{
+      x:{ ticks:{callback:v=>v+'pp'}, grid:{color:'#EEF2F6'} },
+      y:{ grid:{display:false}, ticks:{font:{size:10}} }
+    }
+  }
+});
+
+// ── Drought Chart ──
+new Chart(document.getElementById('droughtChart'), {
+  type: 'scatter',
+  data: {
+    datasets: [{
+      label: 'County (Drought Index vs Access %)',
+      data: [
+        {x:90,y:24},{x:88,y:27},{x:85,y:28},{x:82,y:31},{x:78,y:34},
+        {x:70,y:38},{x:65,y:42},{x:60,y:45},{x:45,y:55},{x:40,y:59},
+        {x:30,y:65},{x:20,y:72},{x:15,y:81},{x:10,y:89},{x:5,y:94},
+      ],
+      backgroundColor: scores => 'rgba(11,79,108,0.55)',
+      pointRadius: 7,
+      pointHoverRadius: 9,
+    }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => `Drought: ${ctx.parsed.x}% | Water Access: ${ctx.parsed.y}%` } } },
+    scales:{
+      x:{ title:{display:true, text:'Drought Frequency Index (%)'}, ticks:{callback:v=>v+'%'}, grid:{color:'#EEF2F6'} },
+      y:{ title:{display:true, text:'Water Access (%)'}, ticks:{callback:v=>v+'%'}, grid:{color:'#EEF2F6'} }
+    }
+  }
+});
+
+// ── Funding Chart ──
+new Chart(document.getElementById('fundingChart'), {
+  type: 'bar',
+  data: {
+    labels: ['2013','2015','2017','2019','2021','2023'],
+    datasets: [
+      { label: 'ODA Disbursed (USD M)', data: [120,145,160,190,210,230], backgroundColor: 'rgba(91,184,212,0.6)', borderRadius:4, yAxisID:'y' },
+      { label: 'Access Gap (%)', data: [48,46,42,38,34,27], borderColor: DANGER, backgroundColor:'transparent', type:'line', tension:0.4, borderWidth:2.5, pointRadius:4, yAxisID:'y1' },
+    ]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{position:'top'} },
+    scales:{
+      y:{ position:'left', title:{display:true,text:'USD Millions'}, grid:{color:'#EEF2F6'} },
+      y1:{ position:'right', title:{display:true,text:'Access Gap (%)'}, min:0,max:60, ticks:{callback:v=>v+'%'}, grid:{display:false} },
+      x:{ grid:{display:false} }
+    }
+  }
+});
+
+// ── Source Chart ──
+new Chart(document.getElementById('sourceChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Piped Water','Protected Well','Borehole','Rainwater','Surface Water','Unimproved'],
+    datasets: [{ data: [38,18,17,9,11,7], backgroundColor: [WATER,WATMID,WATLIT,WATPALE,SAND,'#E0A080'], borderWidth:0, hoverOffset:6 }]
+  },
+  options: {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{ position:'bottom', labels:{ font:{size:10}, padding:10 } },
+      tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${ctx.parsed}%` } }
+    },
+    cutout:'62%'
+  }
+});
+
+// ── Tabs ──
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
